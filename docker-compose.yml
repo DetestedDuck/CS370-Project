@@ -1,4 +1,17 @@
 services:
+  app:
+    image: python:3.9-slim
+    container_name: rag_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/app
+    ports:
+      - 8000:8000
+    environment:
+      - HUGGINGFACE_HUB_TOKEN=<your_huggingface_token>
+    command: bash -c "pip install -r /app/requirements.txt && python /app/main.py"
   mongo:
     image: mongo:latest
     container_name: "llm_engineering_mongo"
@@ -30,10 +43,24 @@ services:
     networks:
       - local
     restart: always
+  clearml:
+    image: allegroai/clearml:latest
+    container_name: clearml
+    ports:
+      - "8080:8080"
+      - "8008:8008"
+      - "8081:8081"
+    environment:
+      - CLEARML_SERVER_HOST=http://localhost:8008
+      - CLEARML_API_ACCESS_KEY=<your_clearml_access_key>
+      - CLEARML_API_SECRET_KEY=<your_clearml_secret_key>
+    volumes:
+      - clearml_data:/mnt/data
 
 volumes:
   mongo_data:
   qdrant_data:
+  clearml_data:
 
 networks:
   local:
